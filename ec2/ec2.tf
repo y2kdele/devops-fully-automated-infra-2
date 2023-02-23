@@ -18,10 +18,15 @@ variable "key_pair_name" {
   description = "keypair to utilize"
 
 }
+variable "aws_security_group" {
+  type = string
+  description = " describe security group"
+}
 
-resource "aws_security_group" "ec2_sg" {
-  name        = join("", [var.name, "-", "ec2-sg"])
+resource "aws_security_group" "jenkins-sg" {
+  name        = var.aws_security_group
   description = "Allow  traffic for http and ssh"
+  vpc_id = var.vpc
 
 
   ingress {
