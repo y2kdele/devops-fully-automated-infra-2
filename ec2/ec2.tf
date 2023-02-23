@@ -33,13 +33,17 @@ resource "aws_security_group" "jenkins-sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks =  [
+      "0.0.0.0/0",
+      "10.0.2.183"
+    ]
   }
 
   ingress {
     from_port   = 9100
     to_port     = 9100
     protocol    = "tcp"
+    description = "allow inbound traffic for node-exporter"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -47,6 +51,7 @@ resource "aws_security_group" "jenkins-sg" {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
+    description = "allow inbound traffic for jenkins"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -68,11 +73,17 @@ resource "aws_iam_instance_profile" "jenkins_server" {
 resource "aws_instance" "web_server" {
   ami                    = "ami-0cc87e5027adcdca8"
   instance_type          = "t3.small"
+  metadata_options {
+    
+    http_endpoint = "enabled"
+    http_tokens   = "required"
+  }
   key_name               = var.key_pair_name
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   user_data              = file("scripts/userdata.sh")
   iam_instance_profile   = aws_iam_instance_profile.jenkins_server.name
   tags                   = merge(var.tags, { Name = join("", [var.name, "-", "webserver"]) }, { Environment = var.name })
+
 
   # best practices as per checkov scanner
 
